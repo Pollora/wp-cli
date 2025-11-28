@@ -5,7 +5,12 @@ declare(strict_types=1);
 namespace Pollora\WpCli\Infrastructure\Services;
 
 use Pollora\Attributes\WpCli;
+use Pollora\Attributes\WpCli\AfterInvoke;
+use Pollora\Attributes\WpCli\BeforeInvoke;
 use Pollora\Attributes\WpCli\Command;
+use Pollora\Attributes\WpCli\IsDeferred;
+use Pollora\Attributes\WpCli\Synopsis;
+use Pollora\Attributes\WpCli\When;
 use Pollora\Discovery\Domain\Contracts\DiscoveryInterface;
 use Pollora\Discovery\Domain\Contracts\DiscoveryLocationInterface;
 use Pollora\Discovery\Domain\Services\IsDiscovery;
@@ -187,15 +192,31 @@ final class WpCliDiscovery implements DiscoveryInterface
     {
         // Register directly with WP CLI if available
         if (\defined('WP_CLI') && WP_CLI) {
-            \WP_CLI::add_command($commandName, $className);
+            try {
+                $reflectionClass = new ReflectionClass($className);
+                $args = $this->collectClassArguments($reflectionClass);
+                \WP_CLI::add_command($commandName, $className, $args);
+            } catch (\ReflectionException $e) {
+                error_log("Failed to collect class arguments for {$className}: " . $e->getMessage());
+                \WP_CLI::add_command($commandName, $className);
+            }
         }
 
         // Also register with our service for tracking
+        $args = [];
+        try {
+            $reflectionClass = new ReflectionClass($className);
+            $args = $this->collectClassArguments($reflectionClass);
+        } catch (\ReflectionException $e) {
+            error_log("Failed to collect class arguments for {$className}: " . $e->getMessage());
+        }
+        
         $this->wpCliService->register(
             $commandName,
             $className,
             '',
-            0 // Default priority
+            0, // Default priority
+            $args
         );
     }
 
@@ -209,17 +230,31 @@ final class WpCliDiscovery implements DiscoveryInterface
      */
     private function processSubcommands(ReflectionClass $reflectionClass, string $className, string $baseCommandName, WpCli $attribute): void
     {
-        // First register the base class command (only public methods will be exposed)
+        // First register the base class command with class-level arguments
         if (\defined('WP_CLI') && WP_CLI) {
-            \WP_CLI::add_command($baseCommandName, $className);
+            try {
+                $args = $this->collectClassArguments($reflectionClass);
+                \WP_CLI::add_command($baseCommandName, $className, $args);
+            } catch (\ReflectionException $e) {
+                error_log("Failed to collect class arguments for {$className}: " . $e->getMessage());
+                \WP_CLI::add_command($baseCommandName, $className);
+            }
         }
 
         // Also register the base command with our service for tracking
+        $args = [];
+        try {
+            $args = $this->collectClassArguments($reflectionClass);
+        } catch (\ReflectionException $e) {
+            error_log("Failed to collect class arguments for {$className}: " . $e->getMessage());
+        }
+        
         $this->wpCliService->register(
             $baseCommandName,
             $className,
             '',
-            0 // Default priority
+            0, // Default priority
+            $args
         );
 
         // Then register private/protected methods with Command attributes as individual subcommands
@@ -243,19 +278,139 @@ final class WpCliDiscovery implements DiscoveryInterface
             // Create a callable array for the subcommand
             $callable = [$className, $method->getName()];
 
-            // Register subcommand with WP CLI
+            // Register subcommand with WP CLI using method-level arguments
             if (\defined('WP_CLI') && WP_CLI) {
-                \WP_CLI::add_command($fullCommandName, $callable);
+                try {
+                    $args = $this->collectMethodArguments($method);
+                    \WP_CLI::add_command($fullCommandName, $callable, $args);
+                } catch (\ReflectionException $e) {
+                    error_log("Failed to collect method arguments for {$className}::{$method->getName()}: " . $e->getMessage());
+                    \WP_CLI::add_command($fullCommandName, $callable);
+                }
             }
 
             // Also register with our service for tracking
+            $methodArgs = [];
+            try {
+                $methodArgs = $this->collectMethodArguments($method);
+            } catch (\ReflectionException $e) {
+                error_log("Failed to collect method arguments for {$className}::{$method->getName()}: " . $e->getMessage());
+            }
+            
             $this->wpCliService->register(
                 $fullCommandName,
                 $callable,
                 '',
-                0 // Default priority
+                0, // Default priority
+                $methodArgs
             );
         }
+    }
+
+    /**
+     * Collect WP CLI arguments from class attributes.
+     *
+     * @param ReflectionClass $reflectionClass The reflection class
+     * @return array The collected arguments for WP_CLI::add_command()
+     */
+    private function collectClassArguments(ReflectionClass $reflectionClass): array
+    {
+        $args = [];
+
+        // Collect BeforeInvoke
+        $beforeInvoke = $reflectionClass->getAttributes(BeforeInvoke::class);
+        if ($beforeInvoke !== []) {
+            /** @var BeforeInvoke $attribute */
+            $attribute = $beforeInvoke[0]->newInstance();
+            $args['before_invoke'] = $attribute->callback;
+        }
+
+        // Collect AfterInvoke
+        $afterInvoke = $reflectionClass->getAttributes(AfterInvoke::class);
+        if ($afterInvoke !== []) {
+            /** @var AfterInvoke $attribute */
+            $attribute = $afterInvoke[0]->newInstance();
+            $args['after_invoke'] = $attribute->callback;
+        }
+
+        // Collect Synopsis
+        $synopsis = $reflectionClass->getAttributes(Synopsis::class);
+        if ($synopsis !== []) {
+            /** @var Synopsis $attribute */
+            $attribute = $synopsis[0]->newInstance();
+            $args['synopsis'] = $attribute->synopsis;
+        }
+
+        // Collect When
+        $when = $reflectionClass->getAttributes(When::class);
+        if ($when !== []) {
+            /** @var When $attribute */
+            $attribute = $when[0]->newInstance();
+            $args['when'] = $attribute->hook;
+        }
+
+        // Collect IsDeferred
+        $isDeferred = $reflectionClass->getAttributes(IsDeferred::class);
+        if ($isDeferred !== []) {
+            /** @var IsDeferred $attribute */
+            $attribute = $isDeferred[0]->newInstance();
+            $args['is_deferred'] = $attribute->deferred;
+        }
+
+        return $args;
+    }
+
+    /**
+     * Collect WP CLI arguments from method attributes.
+     *
+     * @param ReflectionMethod $reflectionMethod The reflection method
+     * @return array The collected arguments for WP_CLI::add_command()
+     */
+    private function collectMethodArguments(ReflectionMethod $reflectionMethod): array
+    {
+        $args = [];
+
+        // Collect BeforeInvoke
+        $beforeInvoke = $reflectionMethod->getAttributes(BeforeInvoke::class);
+        if ($beforeInvoke !== []) {
+            /** @var BeforeInvoke $attribute */
+            $attribute = $beforeInvoke[0]->newInstance();
+            $args['before_invoke'] = $attribute->callback;
+        }
+
+        // Collect AfterInvoke
+        $afterInvoke = $reflectionMethod->getAttributes(AfterInvoke::class);
+        if ($afterInvoke !== []) {
+            /** @var AfterInvoke $attribute */
+            $attribute = $afterInvoke[0]->newInstance();
+            $args['after_invoke'] = $attribute->callback;
+        }
+
+        // Collect Synopsis
+        $synopsis = $reflectionMethod->getAttributes(Synopsis::class);
+        if ($synopsis !== []) {
+            /** @var Synopsis $attribute */
+            $attribute = $synopsis[0]->newInstance();
+            $args['synopsis'] = $attribute->synopsis;
+        }
+
+        // Collect When
+        $when = $reflectionMethod->getAttributes(When::class);
+        if ($when !== []) {
+            /** @var When $attribute */
+            $attribute = $when[0]->newInstance();
+            $args['when'] = $attribute->hook;
+        }
+
+        // Collect IsDeferred
+        $isDeferred = $reflectionMethod->getAttributes(IsDeferred::class);
+        if ($isDeferred !== []) {
+            /** @var IsDeferred $attribute */
+            $attribute = $isDeferred[0]->newInstance();
+            $args['is_deferred'] = $attribute->deferred;
+        }
+
+        return $args;
     }
 
     /**

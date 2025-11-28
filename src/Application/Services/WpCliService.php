@@ -16,7 +16,7 @@ use WP_CLI;
 class WpCliService
 {
     /**
-     * @var array<string, array{class: string|array, description: string, priority: int}>
+     * @var array<string, array{class: string|array, description: string, priority: int, args: array}>
      */
     private array $registeredCommands = [];
 
@@ -27,18 +27,20 @@ class WpCliService
      * @param string|array $className The command class name or callable array
      * @param string $description The command description
      * @param int $priority The registration priority
+     * @param array $args Additional WP_CLI::add_command() arguments
      * @return void
      */
-    public function register(string $name, string|array $className, string $description = '', int $priority = 0): void
+    public function register(string $name, string|array $className, string $description = '', int $priority = 0, array $args = []): void
     {
         $this->registeredCommands[$name] = [
             'class' => $className,
             'description' => $description,
             'priority' => $priority,
+            'args' => $args,
         ];
 
         // Register immediately if WP CLI is available
-        $this->registerWithWpCli($name, $className, $description);
+        $this->registerWithWpCli($name, $className, $description, $args);
     }
 
     /**
@@ -47,9 +49,10 @@ class WpCliService
      * @param string $name The command name
      * @param string|array $className The command class name or callable array
      * @param string $description The command description
+     * @param array $args Additional WP_CLI::add_command() arguments
      * @return void
      */
-    private function registerWithWpCli(string $name, string|array $className, string $description = ''): void
+    private function registerWithWpCli(string $name, string|array $className, string $description = '', array $args = []): void
     {
         if (!(\defined('WP_CLI') && WP_CLI)) {
             return;
@@ -70,8 +73,12 @@ class WpCliService
                 }
             }
             
-            // Register with WP CLI
-            WP_CLI::add_command($name, $className);
+            // Register with WP CLI, including additional arguments if provided
+            if (!empty($args)) {
+                WP_CLI::add_command($name, $className, $args);
+            } else {
+                WP_CLI::add_command($name, $className);
+            }
 
         } catch (\Throwable $e) {
             error_log("Failed to register WP CLI command {$name}: " . $e->getMessage());
@@ -91,14 +98,14 @@ class WpCliService
         }
 
         foreach ($this->registeredCommands as $name => $commandData) {
-            $this->registerWithWpCli($name, $commandData['class']);
+            $this->registerWithWpCli($name, $commandData['class'], $commandData['description'], $commandData['args']);
         }
     }
 
     /**
      * Get all registered commands.
      *
-     * @return array<string, array{class: string|array, description: string, priority: int}>
+     * @return array<string, array{class: string|array, description: string, priority: int, args: array}>
      */
     public function getRegisteredCommands(): array
     {
@@ -120,7 +127,7 @@ class WpCliService
      * Get command information.
      *
      * @param string $name The command name
-     * @return array{class: string|array, description: string, priority: int}|null
+     * @return array{class: string|array, description: string, priority: int, args: array}|null
      */
     public function getCommand(string $name): ?array
     {
