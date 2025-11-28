@@ -38,7 +38,7 @@ class WpCliService
         ];
 
         // Register immediately if WP CLI is available
-        $this->registerWithWpCli($name, $className);
+        $this->registerWithWpCli($name, $className, $description);
     }
 
     /**
@@ -46,9 +46,10 @@ class WpCliService
      *
      * @param string $name The command name
      * @param string|array $className The command class name or callable array
+     * @param string $description The command description
      * @return void
      */
-    private function registerWithWpCli(string $name, string|array $className): void
+    private function registerWithWpCli(string $name, string|array $className, string $description = ''): void
     {
         if (!(\defined('WP_CLI') && WP_CLI)) {
             return;
@@ -68,10 +69,10 @@ class WpCliService
                     return;
                 }
             }
-
+            
             // Register with WP CLI
             WP_CLI::add_command($name, $className);
-            
+
         } catch (\Throwable $e) {
             error_log("Failed to register WP CLI command {$name}: " . $e->getMessage());
         }

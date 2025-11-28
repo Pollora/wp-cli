@@ -121,7 +121,7 @@ final class WpCliDiscovery implements DiscoveryInterface
     {
         try {
             $reflectionClass = new ReflectionClass($className);
-            
+
             // Validate that the class is instantiable
             if (!$reflectionClass->isInstantiable()) {
                 return;
@@ -166,7 +166,7 @@ final class WpCliDiscovery implements DiscoveryInterface
      */
     private function hasMethodLevelCommands(ReflectionClass $reflectionClass): bool
     {
-        foreach ($reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        foreach ($reflectionClass->getMethods() as $method) {
             $commandAttributes = $method->getAttributes(Command::class);
             if ($commandAttributes !== []) {
                 return true;
@@ -187,20 +187,14 @@ final class WpCliDiscovery implements DiscoveryInterface
     {
         // Register directly with WP CLI if available
         if (\defined('WP_CLI') && WP_CLI) {
-            $args = [];
-            
-            if (!empty($attribute->description)) {
-                $args['shortdesc'] = $attribute->description;
-            }
-            
-            \WP_CLI::add_command($commandName, $className, $args);
+            \WP_CLI::add_command($commandName, $className);
         }
 
         // Also register with our service for tracking
         $this->wpCliService->register(
             $commandName,
             $className,
-            $attribute->description ?? '',
+            '',
             0 // Default priority
         );
     }
@@ -215,10 +209,29 @@ final class WpCliDiscovery implements DiscoveryInterface
      */
     private function processSubcommands(ReflectionClass $reflectionClass, string $className, string $baseCommandName, WpCli $attribute): void
     {
-        foreach ($reflectionClass->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+        // First register the base class command (only public methods will be exposed)
+        if (\defined('WP_CLI') && WP_CLI) {
+            \WP_CLI::add_command($baseCommandName, $className);
+        }
+
+        // Also register the base command with our service for tracking
+        $this->wpCliService->register(
+            $baseCommandName,
+            $className,
+            '',
+            0 // Default priority
+        );
+
+        // Then register private/protected methods with Command attributes as individual subcommands
+        foreach ($reflectionClass->getMethods() as $method) {
             $commandAttributes = $method->getAttributes(Command::class);
-            
+
             if ($commandAttributes === []) {
+                continue;
+            }
+
+            // Skip if method is public (already handled by base class registration)
+            if ($method->isPublic()) {
                 continue;
             }
 
@@ -232,20 +245,14 @@ final class WpCliDiscovery implements DiscoveryInterface
 
             // Register subcommand with WP CLI
             if (\defined('WP_CLI') && WP_CLI) {
-                $args = [];
-                
-                if (!empty($commandAttribute->description)) {
-                    $args['shortdesc'] = $commandAttribute->description;
-                }
-                
-                \WP_CLI::add_command($fullCommandName, $callable, $args);
+                \WP_CLI::add_command($fullCommandName, $callable);
             }
 
             // Also register with our service for tracking
             $this->wpCliService->register(
                 $fullCommandName,
                 $callable,
-                $commandAttribute->description ?? '',
+                '',
                 0 // Default priority
             );
         }
