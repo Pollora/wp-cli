@@ -257,16 +257,11 @@ final class WpCliDiscovery implements DiscoveryInterface
             $args
         );
 
-        // Then register private/protected methods with Command attributes as individual subcommands
+        // Then register methods with Command attributes as individual subcommands
         foreach ($reflectionClass->getMethods() as $method) {
             $commandAttributes = $method->getAttributes(Command::class);
 
             if ($commandAttributes === []) {
-                continue;
-            }
-
-            // Skip if method is public (already handled by base class registration)
-            if ($method->isPublic()) {
                 continue;
             }
 
@@ -276,7 +271,12 @@ final class WpCliDiscovery implements DiscoveryInterface
             $fullCommandName = "{$baseCommandName} {$subcommandName}";
 
             // Create a callable array for the subcommand
-            $callable = [$className, $method->getName()];
+            // For private/protected methods, we need to use a wrapper with invade
+            if ($method->isPrivate() || $method->isProtected()) {
+                $callable = $this->createInvadeWrapper($className, $method->getName());
+            } else {
+                $callable = [$className, $method->getName()];
+            }
 
             // Register subcommand with WP CLI using method-level arguments
             if (\defined('WP_CLI') && WP_CLI) {
@@ -327,6 +327,34 @@ final class WpCliDiscovery implements DiscoveryInterface
     private function collectMethodArguments(ReflectionMethod $reflectionMethod): array
     {
         return $this->collectWpCliArguments($reflectionMethod);
+    }
+
+    /**
+     * Create an invade wrapper for calling private/protected methods.
+     *
+     * @param string $className The class name
+     * @param string $methodName The method name
+     * @return array A callable array that uses invade
+     */
+    private function createInvadeWrapper(string $className, string $methodName): array
+    {
+        return [new class($className, $methodName) {
+            private string $className;
+            private string $methodName;
+
+            public function __construct(string $className, string $methodName)
+            {
+                $this->className = $className;
+                $this->methodName = $methodName;
+            }
+
+            public function __invoke(array $args, array $assocArgs): mixed
+            {
+                $instance = app($this->className);
+                $invadedInstance = invade($instance);
+                return $invadedInstance->{$this->methodName}($args, $assocArgs);
+            }
+        }, '__invoke'];
     }
 
     /**

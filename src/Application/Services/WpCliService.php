@@ -61,7 +61,15 @@ class WpCliService
         try {
             // If it's an array (callable), validate the class exists
             if (is_array($className)) {
-                if (!class_exists($className[0])) {
+                // Handle anonymous classes (like our invade wrapper)
+                if (is_object($className[0])) {
+                    // For anonymous classes, we can't validate with class_exists
+                    // but we can check if the method exists
+                    if (!method_exists($className[0], $className[1])) {
+                        error_log("WP CLI command method {$className[1]} does not exist on anonymous class");
+                        return;
+                    }
+                } elseif (!class_exists($className[0])) {
                     error_log("WP CLI command class {$className[0]} does not exist");
                     return;
                 }
