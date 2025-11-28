@@ -315,49 +315,7 @@ final class WpCliDiscovery implements DiscoveryInterface
      */
     private function collectClassArguments(ReflectionClass $reflectionClass): array
     {
-        $args = [];
-
-        // Collect BeforeInvoke
-        $beforeInvoke = $reflectionClass->getAttributes(BeforeInvoke::class);
-        if ($beforeInvoke !== []) {
-            /** @var BeforeInvoke $attribute */
-            $attribute = $beforeInvoke[0]->newInstance();
-            $args['before_invoke'] = $attribute->callback;
-        }
-
-        // Collect AfterInvoke
-        $afterInvoke = $reflectionClass->getAttributes(AfterInvoke::class);
-        if ($afterInvoke !== []) {
-            /** @var AfterInvoke $attribute */
-            $attribute = $afterInvoke[0]->newInstance();
-            $args['after_invoke'] = $attribute->callback;
-        }
-
-        // Collect Synopsis
-        $synopsis = $reflectionClass->getAttributes(Synopsis::class);
-        if ($synopsis !== []) {
-            /** @var Synopsis $attribute */
-            $attribute = $synopsis[0]->newInstance();
-            $args['synopsis'] = $attribute->synopsis;
-        }
-
-        // Collect When
-        $when = $reflectionClass->getAttributes(When::class);
-        if ($when !== []) {
-            /** @var When $attribute */
-            $attribute = $when[0]->newInstance();
-            $args['when'] = $attribute->hook;
-        }
-
-        // Collect IsDeferred
-        $isDeferred = $reflectionClass->getAttributes(IsDeferred::class);
-        if ($isDeferred !== []) {
-            /** @var IsDeferred $attribute */
-            $attribute = $isDeferred[0]->newInstance();
-            $args['is_deferred'] = $attribute->deferred;
-        }
-
-        return $args;
+        return $this->collectWpCliArguments($reflectionClass);
     }
 
     /**
@@ -368,46 +326,34 @@ final class WpCliDiscovery implements DiscoveryInterface
      */
     private function collectMethodArguments(ReflectionMethod $reflectionMethod): array
     {
+        return $this->collectWpCliArguments($reflectionMethod);
+    }
+
+    /**
+     * Collect WP CLI arguments from reflection attributes.
+     *
+     * @param ReflectionClass|ReflectionMethod $reflection The reflection object (class or method)
+     * @return array The collected arguments for WP_CLI::add_command()
+     */
+    private function collectWpCliArguments(ReflectionClass|ReflectionMethod $reflection): array
+    {
         $args = [];
 
-        // Collect BeforeInvoke
-        $beforeInvoke = $reflectionMethod->getAttributes(BeforeInvoke::class);
-        if ($beforeInvoke !== []) {
-            /** @var BeforeInvoke $attribute */
-            $attribute = $beforeInvoke[0]->newInstance();
-            $args['before_invoke'] = $attribute->callback;
-        }
+        // Define attribute mappings: [AttributeClass => [property, wp_cli_key]]
+        $attributeMap = [
+            BeforeInvoke::class => ['callback', 'before_invoke'],
+            AfterInvoke::class => ['callback', 'after_invoke'],
+            Synopsis::class => ['synopsis', 'synopsis'],
+            When::class => ['hook', 'when'],
+            IsDeferred::class => ['deferred', 'is_deferred'],
+        ];
 
-        // Collect AfterInvoke
-        $afterInvoke = $reflectionMethod->getAttributes(AfterInvoke::class);
-        if ($afterInvoke !== []) {
-            /** @var AfterInvoke $attribute */
-            $attribute = $afterInvoke[0]->newInstance();
-            $args['after_invoke'] = $attribute->callback;
-        }
-
-        // Collect Synopsis
-        $synopsis = $reflectionMethod->getAttributes(Synopsis::class);
-        if ($synopsis !== []) {
-            /** @var Synopsis $attribute */
-            $attribute = $synopsis[0]->newInstance();
-            $args['synopsis'] = $attribute->synopsis;
-        }
-
-        // Collect When
-        $when = $reflectionMethod->getAttributes(When::class);
-        if ($when !== []) {
-            /** @var When $attribute */
-            $attribute = $when[0]->newInstance();
-            $args['when'] = $attribute->hook;
-        }
-
-        // Collect IsDeferred
-        $isDeferred = $reflectionMethod->getAttributes(IsDeferred::class);
-        if ($isDeferred !== []) {
-            /** @var IsDeferred $attribute */
-            $attribute = $isDeferred[0]->newInstance();
-            $args['is_deferred'] = $attribute->deferred;
+        foreach ($attributeMap as $attributeClass => [$property, $wpCliKey]) {
+            $attributes = $reflection->getAttributes($attributeClass);
+            if ($attributes !== []) {
+                $attribute = $attributes[0]->newInstance();
+                $args[$wpCliKey] = $attribute->$property;
+            }
         }
 
         return $args;
