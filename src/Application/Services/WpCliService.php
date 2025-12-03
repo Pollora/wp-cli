@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pollora\WpCli\Application\Services;
 
+use Pollora\WpCli\Infrastructure\Adapters\WpCliAdapter;
 use WP_CLI;
 
 /**
@@ -19,6 +20,10 @@ class WpCliService
      * @var array<string, array{class: string|array, description: string, priority: int, args: array}>
      */
     private array $registeredCommands = [];
+
+    public function __construct(
+        private readonly WpCliAdapter $wpCliAdapter
+    ) {}
 
     /**
      * Register a WP CLI command.
@@ -44,7 +49,7 @@ class WpCliService
     }
 
     /**
-     * Register a command with WP CLI if it's available.
+     * Register a command with WP CLI through the adapter.
      *
      * @param string $name The command name
      * @param string|array $className The command class name or callable array
@@ -54,40 +59,13 @@ class WpCliService
      */
     private function registerWithWpCli(string $name, string|array $className, string $description = '', array $args = []): void
     {
-        if (!(\defined('WP_CLI') && WP_CLI)) {
+        if (!$this->wpCliAdapter->isAvailable()) {
             return;
         }
 
         try {
-            // If it's an array (callable), validate the class exists
-            if (is_array($className)) {
-                // Handle anonymous classes (like our invade wrapper)
-                if (is_object($className[0])) {
-                    // For anonymous classes, we can't validate with class_exists
-                    // but we can check if the method exists
-                    if (!method_exists($className[0], $className[1])) {
-                        error_log("WP CLI command method {$className[1]} does not exist on anonymous class");
-                        return;
-                    }
-                } elseif (!class_exists($className[0])) {
-                    error_log("WP CLI command class {$className[0]} does not exist");
-                    return;
-                }
-            } else {
-                // Validate that the class exists for string class names
-                if (!class_exists($className)) {
-                    error_log("WP CLI command class {$className} does not exist");
-                    return;
-                }
-            }
-            
-            // Register with WP CLI, including additional arguments if provided
-            if (!empty($args)) {
-                WP_CLI::add_command($name, $className, $args);
-            } else {
-                WP_CLI::add_command($name, $className);
-            }
-
+            // Delegate validation and registration to the adapter
+            $this->wpCliAdapter->addCommand($name, $className, $args);
         } catch (\Throwable $e) {
             error_log("Failed to register WP CLI command {$name}: " . $e->getMessage());
         }
@@ -101,7 +79,7 @@ class WpCliService
      */
     public function initializeCommands(): void
     {
-        if (!(\defined('WP_CLI') && WP_CLI)) {
+        if (!$this->wpCliAdapter->isAvailable()) {
             return;
         }
 

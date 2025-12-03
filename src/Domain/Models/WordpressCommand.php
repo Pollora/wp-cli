@@ -44,28 +44,19 @@ abstract class WordpressCommand extends WP_CLI_Command implements WpCliCommandIn
     }
 
     /**
-     * Initialize the command by registering it with WP CLI.
-     * This method is called during the discovery process.
+     * Get command registration data.
+     * Returns data needed for command registration without directly interacting with WP-CLI.
+     * This respects the hexagonal architecture by keeping the domain layer pure.
      *
-     * @return void
+     * @return array{name: string|null, description: string|null, class: string}
      */
-    public function initialize(): void
+    public function getRegistrationData(): array
     {
-        if (!(\defined('WP_CLI') && WP_CLI)) {
-            return;
-        }
-
-        $commandName = static::getDefaultName();
-        if ($commandName !== null) {
-            $description = static::getDefaultDescription();
-            $args = [];
-            
-            if ($description) {
-                $args['shortdesc'] = $description;
-            }
-            
-            WP_CLI::add_command($commandName, static::class, $args);
-        }
+        return [
+            'name' => static::getDefaultName(),
+            'description' => static::getDefaultDescription(),
+            'class' => static::class,
+        ];
     }
 
     /**
