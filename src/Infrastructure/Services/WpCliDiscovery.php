@@ -14,6 +14,7 @@ use Pollora\Attributes\WpCli\When;
 use Pollora\Discovery\Domain\Contracts\DiscoveryInterface;
 use Pollora\Discovery\Domain\Contracts\DiscoveryLocationInterface;
 use Pollora\Discovery\Domain\Services\IsDiscovery;
+use Pollora\Discovery\Domain\Services\HasInstancePool;
 use Pollora\WpCli\Application\Services\WpCliService;
 use Pollora\WpCli\Infrastructure\Adapters\WpCliMethodWrapper;
 use ReflectionClass;
@@ -29,7 +30,7 @@ use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
  */
 final class WpCliDiscovery implements DiscoveryInterface
 {
-    use IsDiscovery;
+    use IsDiscovery, HasInstancePool;
 
     /**
      * @var array<class-string, object>
@@ -122,12 +123,14 @@ final class WpCliDiscovery implements DiscoveryInterface
      */
     private function getCommandInstance(string $className): object
     {
-        if (! isset($this->commandInstances[$className])) {
-            // On laisse le container gérer la construction
-            $this->commandInstances[$className] = app($className);
-        }
-
-        return $this->commandInstances[$className];
+        // Use instance pool if available, otherwise fallback to local cache
+        return $this->getInstanceFromPool($className, function() use ($className) {
+            if (! isset($this->commandInstances[$className])) {
+                // On laisse le container gérer la construction
+                $this->commandInstances[$className] = app($className);
+            }
+            return $this->commandInstances[$className];
+        });
     }
 
     /**
