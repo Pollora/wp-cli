@@ -6,7 +6,6 @@ namespace Pollora\WpCli\Domain\Models;
 
 use Pollora\Attributes\WpCli;
 use Pollora\WpCli\Domain\Contracts\WpCliCommandInterface;
-use WP_CLI;
 use WP_CLI_Command;
 
 /**
@@ -26,9 +25,8 @@ abstract class WordpressCommand extends WP_CLI_Command implements WpCliCommandIn
      * Execute the command with provided arguments and options.
      * This method must be implemented by concrete command classes.
      *
-     * @param array<string, mixed> $arguments The command arguments
-     * @param array<string, mixed> $options The command options/flags
-     * @return void
+     * @param  array<string, mixed>  $arguments  The command arguments
+     * @param  array<string, mixed>  $options  The command options/flags
      */
     abstract public function __invoke(array $arguments, array $options): void;
 
@@ -75,10 +73,11 @@ abstract class WordpressCommand extends WP_CLI_Command implements WpCliCommandIn
             if ($attributes !== []) {
                 /** @var WpCli $attribute */
                 $attribute = $attributes[0]->newInstance();
+
                 return $attribute->name;
             }
         } catch (\ReflectionException $e) {
-            error_log("Failed to get command name for {$class}: " . $e->getMessage());
+            error_log("Failed to get command name for {$class}: ".$e->getMessage());
         }
 
         return null;
@@ -100,10 +99,11 @@ abstract class WordpressCommand extends WP_CLI_Command implements WpCliCommandIn
             if ($attributes !== []) {
                 /** @var WpCli $attribute */
                 $attribute = $attributes[0]->newInstance();
+
                 return $attribute->description ?? null;
             }
         } catch (\ReflectionException $e) {
-            error_log("Failed to get command description for {$class}: " . $e->getMessage());
+            error_log("Failed to get command description for {$class}: ".$e->getMessage());
         }
 
         return null;

@@ -8,7 +8,7 @@ use WP_CLI;
 
 /**
  * Adapter for WP-CLI integration.
- * 
+ *
  * This adapter encapsulates all direct interactions with WP-CLI,
  * providing a clean interface that respects hexagonal architecture
  * by isolating external dependencies in the infrastructure layer.
@@ -26,15 +26,16 @@ final class WpCliAdapter
     /**
      * Register a command with WP-CLI.
      *
-     * @param string $name The command name
-     * @param string|array|object $handler The command handler
-     * @param array<string, mixed> $args Additional arguments for WP-CLI
+     * @param  string  $name  The command name
+     * @param  string|array|object  $handler  The command handler
+     * @param  array<string, mixed>  $args  Additional arguments for WP-CLI
+     *
      * @throws \RuntimeException If WP-CLI is not available
      * @throws \InvalidArgumentException If the handler is invalid
      */
     public function addCommand(string $name, string|array|object $handler, array $args = []): void
     {
-        if (!$this->isAvailable()) {
+        if (! $this->isAvailable()) {
             throw new \RuntimeException('WP-CLI is not available');
         }
 
@@ -44,7 +45,7 @@ final class WpCliAdapter
             WP_CLI::add_command($name, $handler, $args);
         } catch (\Throwable $e) {
             throw new \RuntimeException(
-                "Failed to register WP-CLI command '{$name}': " . $e->getMessage(),
+                "Failed to register WP-CLI command '{$name}': ".$e->getMessage(),
                 $e->getCode(),
                 $e
             );
@@ -54,13 +55,12 @@ final class WpCliAdapter
     /**
      * Validate that the handler is properly formatted.
      *
-     * @param string|array|object $handler
      * @throws \InvalidArgumentException If the handler is invalid
      */
     private function validateHandler(string|array|object $handler): void
     {
         if (is_string($handler)) {
-            if (!class_exists($handler)) {
+            if (! class_exists($handler)) {
                 throw new \InvalidArgumentException("Command handler class '{$handler}' does not exist");
             }
         } elseif (is_array($handler)) {
@@ -70,20 +70,20 @@ final class WpCliAdapter
 
             [$object, $method] = $handler;
 
-            if (!is_object($object)) {
+            if (! is_object($object)) {
                 throw new \InvalidArgumentException('First element of handler array must be an object');
             }
 
-            if (!is_string($method)) {
+            if (! is_string($method)) {
                 throw new \InvalidArgumentException('Second element of handler array must be a method name string');
             }
 
-            if (!method_exists($object, $method)) {
+            if (! method_exists($object, $method)) {
                 $class = get_class($object);
                 throw new \InvalidArgumentException("Method '{$method}' does not exist on class '{$class}'");
             }
         } elseif (is_object($handler)) {
-            if (!method_exists($handler, '__invoke')) {
+            if (! method_exists($handler, '__invoke')) {
                 $class = get_class($handler);
                 throw new \InvalidArgumentException("Object of class '{$class}' must be invokable (have __invoke method)");
             }
@@ -93,17 +93,18 @@ final class WpCliAdapter
     /**
      * Check if a command is already registered with WP-CLI.
      *
-     * @param string $name The command name
+     * @param  string  $name  The command name
      * @return bool True if the command exists
      */
     public function hasCommand(string $name): bool
     {
-        if (!$this->isAvailable()) {
+        if (! $this->isAvailable()) {
             return false;
         }
 
         try {
             $runner = WP_CLI::get_runner();
+
             return $runner->find_command_to_run(explode(' ', $name)) !== null;
         } catch (\Throwable) {
             return false;
@@ -117,7 +118,7 @@ final class WpCliAdapter
      */
     public function getVersion(): ?string
     {
-        if (!$this->isAvailable()) {
+        if (! $this->isAvailable()) {
             return null;
         }
 
@@ -131,12 +132,12 @@ final class WpCliAdapter
     /**
      * Log a message to WP-CLI output.
      *
-     * @param string $message The message to log
-     * @param string $level The log level (debug, log, warning, error, success)
+     * @param  string  $message  The message to log
+     * @param  string  $level  The log level (debug, log, warning, error, success)
      */
     public function log(string $message, string $level = 'log'): void
     {
-        if (!$this->isAvailable()) {
+        if (! $this->isAvailable()) {
             return;
         }
 

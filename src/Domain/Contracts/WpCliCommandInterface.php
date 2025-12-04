@@ -16,9 +16,8 @@ interface WpCliCommandInterface
     /**
      * Execute the command with provided arguments and options.
      *
-     * @param array<string, mixed> $arguments The command arguments
-     * @param array<string, mixed> $options The command options/flags
-     * @return void
+     * @param  array<string, mixed>  $arguments  The command arguments
+     * @param  array<string, mixed>  $options  The command options/flags
      */
     public function __invoke(array $arguments, array $options): void;
 
@@ -32,8 +31,6 @@ interface WpCliCommandInterface
     /**
      * Initialize the command.
      * This method is called during the discovery and registration process.
-     *
-     * @return void
      */
     public function initialize(): void;
 

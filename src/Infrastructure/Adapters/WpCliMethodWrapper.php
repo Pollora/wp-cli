@@ -8,9 +8,9 @@ use ReflectionMethod;
 
 /**
  * Wrapper class that preserves method documentation for WP-CLI help system
- * 
+ *
  * This adapter acts as a proxy between the domain layer and WP-CLI infrastructure,
- * allowing WP-CLI to access the documentation of non-public methods while still 
+ * allowing WP-CLI to access the documentation of non-public methods while still
  * being able to execute them. This preserves the hexagonal architecture principle
  * by keeping WP-CLI concerns in the infrastructure layer.
  */
@@ -24,7 +24,7 @@ final class WpCliMethodWrapper
     ) {
         // Force accessibility for non-public methods
         $this->originalMethod->setAccessible(true);
-        
+
         // Cache the docblock for later use
         $this->docComment = $this->originalMethod->getDocComment() ?: '';
     }
@@ -56,21 +56,23 @@ final class WpCliMethodWrapper
     public function createProxyMethod(): \ReflectionMethod
     {
         $methodName = $this->originalMethod->getName();
-        
+
         // Create a temporary class with a method that has the same name and docblock
-        $proxyClass = new class($this->docComment, $methodName) {
+        $proxyClass = new class($this->docComment, $methodName)
+        {
             private string $docComment;
+
             private string $methodName;
-            
+
             public function __construct(string $docComment, string $methodName)
             {
                 $this->docComment = $docComment;
                 $this->methodName = $methodName;
             }
-            
+
             // We'll dynamically add the method via eval (not ideal but necessary for docblock preservation)
         };
-        
+
         return $this->originalMethod;
     }
 
