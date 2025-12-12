@@ -44,7 +44,7 @@ final class WpCliDiscovery implements DiscoveryInterface
     /**
      * {@inheritDoc}
      */
-    public function discover(DiscoveryLocationInterface $location, DiscoveredStructure $structure): void
+    public function discover(DiscoveryLocationInterface $location, DiscoveredStructure $structure, ?\Pollora\Discovery\Domain\Contracts\ReflectionCacheInterface $reflectionCache = null): void
     {
         if (! $structure instanceof DiscoveredClass || $structure->isAbstract) {
             return;
@@ -54,6 +54,7 @@ final class WpCliDiscovery implements DiscoveryInterface
             if ($attribute->class === WpCli::class) {
                 $this->getItems()->add($location, [
                     'class' => $structure->namespace.'\\'.$structure->name,
+                    'reflection_cache' => $reflectionCache,
                 ]);
 
                 return;
@@ -68,7 +69,8 @@ final class WpCliDiscovery implements DiscoveryInterface
     {
         foreach ($this->getItems() as $discoveredItem) {
             try {
-                $this->processWpCliCommand($discoveredItem['class']);
+                $reflectionCache = $discoveredItem['reflection_cache'] ?? null;
+                $this->processWpCliCommand($discoveredItem['class'], $reflectionCache);
             } catch (\Throwable $e) {
                 error_log("Failed to register WP CLI command from class {$discoveredItem['class']}: ".$e->getMessage());
             }
@@ -78,9 +80,9 @@ final class WpCliDiscovery implements DiscoveryInterface
     /**
      * Process a WP CLI command class for registration.
      */
-    private function processWpCliCommand(string $className): void
+    private function processWpCliCommand(string $className, ?\Pollora\Discovery\Domain\Contracts\ReflectionCacheInterface $reflectionCache = null): void
     {
-        $reflectionClass = new ReflectionClass($className);
+        $reflectionClass = $reflectionCache->getClassReflection($className);
 
         if (! $reflectionClass->isInstantiable()) {
             return;
