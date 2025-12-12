@@ -44,7 +44,7 @@ class WpCliService
         ];
 
         // Register immediately if WP CLI is available
-        $this->registerWithWpCli($name, $className, $description, $args);
+        $this->registerWithWpCli($name, $className, $args);
     }
 
     /**
@@ -52,10 +52,9 @@ class WpCliService
      *
      * @param  string  $name  The command name
      * @param  string|array  $className  The command class name or callable array
-     * @param  string  $description  The command description
      * @param  array  $args  Additional WP_CLI::add_command() arguments
      */
-    private function registerWithWpCli(string $name, string|array $className, string $description = '', array $args = []): void
+    private function registerWithWpCli(string $name, string|array $className, array $args = []): void
     {
         if (! $this->wpCliAdapter->isAvailable()) {
             return;
@@ -80,7 +79,7 @@ class WpCliService
         }
 
         foreach ($this->registeredCommands as $name => $commandData) {
-            $this->registerWithWpCli($name, $commandData['class'], $commandData['description'], $commandData['args']);
+            $this->registerWithWpCli($name, $commandData['class'], $commandData['args']);
         }
     }
 

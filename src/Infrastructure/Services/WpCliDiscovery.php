@@ -213,15 +213,11 @@ final class WpCliDiscovery implements DiscoveryInterface
             return [$instance, $method->getName()];
         }
 
-        // Pour les méthodes non publiques, on doit préserver la documentation
-        // On retourne directement l'instance et le nom de la méthode, mais on rend la méthode accessible
-        $method->setAccessible(true);
-
         // Créer un wrapper qui se comporte comme la méthode originale
         $wrapper = new WpCliMethodWrapper($instance, $method);
 
         // Retourner un callable qui préserve l'accès à la documentation
-        return [$wrapper, '__invoke'];
+        return $wrapper->__invoke(...);
     }
 
     /**
@@ -271,7 +267,7 @@ final class WpCliDiscovery implements DiscoveryInterface
     {
         // Remove /** and */ and leading asterisks
         $cleaned = preg_replace('/^\/\*\*|\*\/$/', '', $docComment);
-        $lines = explode("\n", $cleaned);
+        $lines = explode("\n", (string) $cleaned);
 
         $description = ['short' => '', 'long' => ''];
         $inLongDesc = false;
@@ -281,7 +277,7 @@ final class WpCliDiscovery implements DiscoveryInterface
             $line = trim(ltrim($line, ' *'));
 
             // Skip empty lines at the beginning
-            if (empty($line) && empty($description['short']) && empty($longDescLines)) {
+            if (($line === '' || $line === '0') && empty($description['short']) && $longDescLines === []) {
                 continue;
             }
 
@@ -291,22 +287,22 @@ final class WpCliDiscovery implements DiscoveryInterface
             }
 
             // First non-empty line is the short description
-            if (empty($description['short']) && ! empty($line)) {
+            if (empty($description['short']) && ($line !== '' && $line !== '0')) {
                 $description['short'] = $line;
 
                 continue;
             }
 
             // After short description, collect long description
-            if (! empty($description['short'])) {
+            if (isset($description['short']) && ($description['short'] !== '' && $description['short'] !== '0')) {
                 $inLongDesc = true;
-                if (! empty($line) || ! empty($longDescLines)) {
+                if ($line !== '' && $line !== '0' || $longDescLines !== []) {
                     $longDescLines[] = $line;
                 }
             }
         }
 
-        if (! empty($longDescLines)) {
+        if ($longDescLines !== []) {
             $description['long'] = trim(implode("\n", $longDescLines));
         }
 

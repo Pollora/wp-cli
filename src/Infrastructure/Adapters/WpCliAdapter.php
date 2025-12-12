@@ -79,12 +79,12 @@ final class WpCliAdapter
             }
 
             if (! method_exists($object, $method)) {
-                $class = get_class($object);
+                $class = $object::class;
                 throw new \InvalidArgumentException("Method '{$method}' does not exist on class '{$class}'");
             }
         } elseif (is_object($handler)) {
             if (! method_exists($handler, '__invoke')) {
-                $class = get_class($handler);
+                $class = $handler::class;
                 throw new \InvalidArgumentException("Object of class '{$class}' must be invokable (have __invoke method)");
             }
         }
