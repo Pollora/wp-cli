@@ -131,7 +131,7 @@ final class WpCliDiscovery implements DiscoveryInterface
         return $this->getInstanceFromPool($className, function () use ($className) {
             if (! isset($this->commandInstances[$className])) {
                 // On laisse le container gérer la construction
-                $this->commandInstances[$className] = app($className);
+                $this->commandInstances[$className] = resolve($className);
             }
 
             return $this->commandInstances[$className];
