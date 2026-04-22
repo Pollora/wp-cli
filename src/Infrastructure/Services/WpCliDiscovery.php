@@ -13,6 +13,7 @@ use Pollora\Attributes\WpCli\Synopsis;
 use Pollora\Attributes\WpCli\When;
 use Pollora\Discovery\Domain\Contracts\DiscoveryInterface;
 use Pollora\Discovery\Domain\Contracts\DiscoveryLocationInterface;
+use Pollora\Discovery\Domain\Contracts\ReflectionCacheInterface;
 use Pollora\Discovery\Domain\Services\HasInstancePool;
 use Pollora\Discovery\Domain\Services\IsDiscovery;
 use Pollora\WpCli\Application\Services\WpCliService;
@@ -44,7 +45,7 @@ final class WpCliDiscovery implements DiscoveryInterface
     /**
      * {@inheritDoc}
      */
-    public function discover(DiscoveryLocationInterface $location, DiscoveredStructure $structure, ?\Pollora\Discovery\Domain\Contracts\ReflectionCacheInterface $reflectionCache = null): void
+    public function discover(DiscoveryLocationInterface $location, DiscoveredStructure $structure, ?ReflectionCacheInterface $reflectionCache = null): void
     {
         if (! $structure instanceof DiscoveredClass || $structure->isAbstract) {
             return;
@@ -80,7 +81,7 @@ final class WpCliDiscovery implements DiscoveryInterface
     /**
      * Process a WP CLI command class for registration.
      */
-    private function processWpCliCommand(string $className, ?\Pollora\Discovery\Domain\Contracts\ReflectionCacheInterface $reflectionCache = null): void
+    private function processWpCliCommand(string $className, ?ReflectionCacheInterface $reflectionCache = null): void
     {
         $reflectionClass = $reflectionCache->getClassReflection($className);
 
