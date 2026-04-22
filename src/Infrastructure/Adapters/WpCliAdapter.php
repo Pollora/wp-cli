@@ -43,11 +43,11 @@ final class WpCliAdapter
 
         try {
             WP_CLI::add_command($name, $handler, $args);
-        } catch (\Throwable $e) {
+        } catch (\Throwable $throwable) {
             throw new \RuntimeException(
-                "Failed to register WP-CLI command '{$name}': ".$e->getMessage(),
-                $e->getCode(),
-                $e
+                sprintf("Failed to register WP-CLI command '%s': ", $name).$throwable->getMessage(),
+                $throwable->getCode(),
+                $throwable
             );
         }
     }
@@ -61,7 +61,7 @@ final class WpCliAdapter
     {
         if (is_string($handler)) {
             if (! class_exists($handler)) {
-                throw new \InvalidArgumentException("Command handler class '{$handler}' does not exist");
+                throw new \InvalidArgumentException(sprintf("Command handler class '%s' does not exist", $handler));
             }
         } elseif (is_array($handler)) {
             if (count($handler) !== 2) {
@@ -80,12 +80,12 @@ final class WpCliAdapter
 
             if (! method_exists($object, $method)) {
                 $class = $object::class;
-                throw new \InvalidArgumentException("Method '{$method}' does not exist on class '{$class}'");
+                throw new \InvalidArgumentException(sprintf("Method '%s' does not exist on class '%s'", $method, $class));
             }
         } elseif (is_object($handler)) {
             if (! method_exists($handler, '__invoke')) {
                 $class = $handler::class;
-                throw new \InvalidArgumentException("Object of class '{$class}' must be invokable (have __invoke method)");
+                throw new \InvalidArgumentException(sprintf("Object of class '%s' must be invokable (have __invoke method)", $class));
             }
         }
     }

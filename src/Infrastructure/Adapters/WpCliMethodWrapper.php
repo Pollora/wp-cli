@@ -42,7 +42,7 @@ final readonly class WpCliMethodWrapper
             return $this->originalMethod->invoke($this->instance, ...$arguments);
         }
 
-        throw new \BadMethodCallException("Method {$name} does not exist");
+        throw new \BadMethodCallException(sprintf('Method %s does not exist', $name));
     }
 
     /**

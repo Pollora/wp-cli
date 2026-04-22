@@ -31,7 +31,8 @@ use Spatie\StructureDiscoverer\Data\DiscoveredStructure;
  */
 final class WpCliDiscovery implements DiscoveryInterface
 {
-    use HasInstancePool, IsDiscovery;
+    use HasInstancePool;
+    use IsDiscovery;
 
     /**
      * @var array<class-string, object>
@@ -73,7 +74,7 @@ final class WpCliDiscovery implements DiscoveryInterface
                 $reflectionCache = $discoveredItem['reflection_cache'] ?? null;
                 $this->processWpCliCommand($discoveredItem['class'], $reflectionCache);
             } catch (\Throwable $e) {
-                error_log("Failed to register WP CLI command from class {$discoveredItem['class']}: ".$e->getMessage());
+                error_log(sprintf('Failed to register WP CLI command from class %s: ', $discoveredItem['class']).$e->getMessage());
             }
         }
     }
@@ -99,7 +100,7 @@ final class WpCliDiscovery implements DiscoveryInterface
         $commandName = $attribute->getCommandName($className);
 
         if (empty($commandName)) {
-            error_log("WP CLI command {$className} has no command name defined");
+            error_log(sprintf('WP CLI command %s has no command name defined', $className));
 
             return;
         }
@@ -181,7 +182,7 @@ final class WpCliDiscovery implements DiscoveryInterface
             /** @var Command $commandAttribute */
             $commandAttribute = $commandAttributes[0]->newInstance();
             $subcommandName = $commandAttribute->getSubcommandName($method->getName());
-            $fullCommandName = "{$baseCommandName} {$subcommandName}";
+            $fullCommandName = sprintf('%s %s', $baseCommandName, $subcommandName);
 
             $handler = $this->createCallable($instance, $method);
 
@@ -254,6 +255,7 @@ final class WpCliDiscovery implements DiscoveryInterface
                 if (! empty($description['short'])) {
                     $args['shortdesc'] = $description['short'];
                 }
+
                 if (! empty($description['long'])) {
                     $args['longdesc'] = $description['long'];
                 }
