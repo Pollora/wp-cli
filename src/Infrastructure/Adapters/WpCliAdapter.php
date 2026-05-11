@@ -41,15 +41,7 @@ final class WpCliAdapter
 
         $this->validateHandler($handler);
 
-        try {
-            WP_CLI::add_command($name, $handler, $args);
-        } catch (\Throwable $throwable) {
-            throw new \RuntimeException(
-                sprintf("Failed to register WP-CLI command '%s': ", $name).$throwable->getMessage(),
-                $throwable->getCode(),
-                $throwable
-            );
-        }
+        WP_CLI::add_command($name, $handler, $args);
     }
 
     /**

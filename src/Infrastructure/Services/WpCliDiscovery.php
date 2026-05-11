@@ -200,7 +200,7 @@ final class WpCliDiscovery implements DiscoveryInterface
      *
      * @param  array<string,mixed>  $args
      */
-    private function registerCommand(string $commandName, string|array $handler, array $args = []): void
+    private function registerCommand(string $commandName, string|array|\Closure $handler, array $args = []): void
     {
         // Delegate to the application service which handles WP-CLI registration
         $this->wpCliService->register($commandName, $handler, '', 0, $args);
@@ -209,7 +209,7 @@ final class WpCliDiscovery implements DiscoveryInterface
     /**
      * Create a callable for a method (handles private/protected methods).
      */
-    private function createCallable(object $instance, ReflectionMethod $method): array
+    private function createCallable(object $instance, ReflectionMethod $method): array|\Closure
     {
         if ($method->isPublic()) {
             // Cas simple : WP-CLI peut appeler directement [instance, 'methodName']
@@ -251,9 +251,7 @@ final class WpCliDiscovery implements DiscoveryInterface
             if ($docComment) {
                 // Extraire la description courte et longue du docblock
                 $description = $this->extractMethodDescription($docComment);
-                if (! empty($description['short'])) {
-                    $args['shortdesc'] = $description['short'];
-                }
+                $args['shortdesc'] = $description['short'];
 
                 if (! empty($description['long'])) {
                     $args['longdesc'] = $description['long'];
@@ -298,7 +296,7 @@ final class WpCliDiscovery implements DiscoveryInterface
             }
 
             // After short description, collect long description
-            if (isset($description['short']) && ($description['short'] !== '' && $description['short'] !== '0')) {
+            if ($description['short'] !== '' && $description['short'] !== '0') {
                 $inLongDesc = true;
                 if ($line !== '' && $line !== '0' || $longDescLines !== []) {
                     $longDescLines[] = $line;
