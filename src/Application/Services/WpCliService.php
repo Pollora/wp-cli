@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pollora\WpCli\Application\Services;
 
 use Pollora\WpCli\Infrastructure\Adapters\WpCliAdapter;
+use Psr\Log\LoggerInterface;
 use WP_CLI;
 
 /**
@@ -22,7 +23,8 @@ class WpCliService
     private array $registeredCommands = [];
 
     public function __construct(
-        private readonly WpCliAdapter $wpCliAdapter
+        private readonly WpCliAdapter $wpCliAdapter,
+        private readonly ?LoggerInterface $logger = null
     ) {}
 
     /**
@@ -64,7 +66,7 @@ class WpCliService
             // Delegate validation and registration to the adapter
             $this->wpCliAdapter->addCommand($name, $className, $args);
         } catch (\Throwable $throwable) {
-            error_log(sprintf('Failed to register WP CLI command %s: ', $name).$throwable->getMessage());
+            $this->logger?->error(sprintf('Failed to register WP CLI command %s: ', $name).$throwable->getMessage());
         }
     }
 
