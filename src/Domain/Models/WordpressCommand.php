@@ -74,7 +74,7 @@ abstract class WordpressCommand extends WP_CLI_Command implements WpCliCommandIn
                 /** @var WpCli $attribute */
                 $attribute = $attributes[0]->newInstance();
 
-                return $attribute->name;
+                return $attribute->getCommandName($class);
             }
         } catch (\ReflectionException $reflectionException) {
             error_log(sprintf('Failed to get command name for %s: ', $class).$reflectionException->getMessage());
@@ -100,7 +100,7 @@ abstract class WordpressCommand extends WP_CLI_Command implements WpCliCommandIn
                 /** @var WpCli $attribute */
                 $attribute = $attributes[0]->newInstance();
 
-                return $attribute->description ?? null;
+                return null;
             }
         } catch (\ReflectionException $reflectionException) {
             error_log(sprintf('Failed to get command description for %s: ', $class).$reflectionException->getMessage());
