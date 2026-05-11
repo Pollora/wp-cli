@@ -114,11 +114,7 @@ final class WpCliAdapter
             return null;
         }
 
-        try {
-            return WP_CLI_VERSION ?? null;
-        } catch (\Throwable) {
-            return null;
-        }
+        return WP_CLI_VERSION ?? null;
     }
 
     /**
