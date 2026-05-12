@@ -20,7 +20,7 @@ describe('WpCliMethodWrapper', function (): void {
                 return 'Hello '.$args[0];
             }
 
-            private function secretMethod(array $args, array $assocArgs): string
+            private function secretMethod(array $args): string
             {
                 return 'secret: '.$args[0];
             }
@@ -92,7 +92,7 @@ describe('WpCliMethodWrapper', function (): void {
 
     it('can invoke private methods via reflection', function (): void {
         $method = new ReflectionMethod($this->instance, 'secretMethod');
-        $method->setAccessible(true);
+
         $wrapper = new WpCliMethodWrapper($this->instance, $method);
 
         $result = $wrapper(['data'], []);

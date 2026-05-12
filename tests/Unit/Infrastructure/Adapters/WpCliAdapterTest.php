@@ -58,7 +58,6 @@ describe('WpCliAdapter validation', function (): void {
     beforeEach(function (): void {
         $this->adapter = new WpCliAdapter;
         $this->validate = new ReflectionMethod(WpCliAdapter::class, 'validateHandler');
-        $this->validate->setAccessible(true);
     });
 
     it('accepts a valid class string', function (): void {
