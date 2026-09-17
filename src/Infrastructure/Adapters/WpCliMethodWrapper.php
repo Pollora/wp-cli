@@ -52,14 +52,6 @@ final readonly class WpCliMethodWrapper
      */
     public function createProxyMethod(): ReflectionMethod
     {
-        $methodName = $this->originalMethod->getName();
-
-        // Create a temporary class with a method that has the same name and docblock
-        new class($this->docComment, $methodName)
-        {
-            // We'll dynamically add the method via eval (not ideal but necessary for docblock preservation)
-        };
-
         return $this->originalMethod;
     }
 
