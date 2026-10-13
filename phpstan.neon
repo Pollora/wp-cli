@@ -1,0 +1,13 @@
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+    level: 5
+    paths:
+        - src
+    ignoreErrors:
+        # WP-CLI defines it when it runs; getVersion() reads it only then
+        -
+            identifier: constant.notFound
+            message: '#^Constant WP_CLI_VERSION not found\.$#'
+            path: src/Infrastructure/Adapters/WpCliAdapter.php

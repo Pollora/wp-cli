@@ -1,0 +1,73 @@
+{
+    "name": "pollora/wp-cli",
+    "description": "WP-CLI commands declared with PHP attributes: a class with #[WpCli], subcommands with #[Command], synopsis, hooks and conditions as attributes. Runs with or without Laravel.",
+    "type": "library",
+    "keywords": [
+        "attributes",
+        "pollora",
+        "wordpress",
+        "wp-cli"
+    ],
+    "homepage": "https://pollora.dev/advanced/wp-cli/",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Amphibee",
+            "email": "contact@amphibee.fr"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/Pollora/wp-cli/issues",
+        "source": "https://github.com/Pollora/wp-cli"
+    },
+    "require": {
+        "php": "^8.3",
+        "pollora/attributes": "^0.1 || ^1.0",
+        "pollora/discovery": "^0.1 || ^1.0",
+        "psr/log": "^3.0"
+    },
+    "require-dev": {
+        "antecedent/patchwork": "^2.2",
+        "brain/monkey": "^2.7",
+        "laravel/pint": "^1.22.1",
+        "mockery/mockery": "^1.6.12",
+        "pestphp/pest": "^3.8.2",
+        "phpstan/phpstan": "^2.1.16",
+        "szepeviktor/phpstan-wordpress": "^2.0",
+        "wp-cli/wp-cli": "^2.12"
+    },
+    "suggest": {
+        "wp-cli/wp-cli": "Runs the commands; WP-CLI provides it when it loads WordPress"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pollora\\WpCli\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Pollora\\WpCli\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": [
+            "@test:unit",
+            "@phpstan",
+            "@lint:check"
+        ],
+        "test:unit": "pest",
+        "test:coverage": "pest --coverage",
+        "phpstan": "phpstan analyse",
+        "phpstan:ci": "phpstan analyse --no-progress",
+        "lint": "pint",
+        "lint:check": "pint --test"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
