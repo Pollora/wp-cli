@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-13
+
 ### Fixed
 
 - Commands get their constructor dependencies: WP-CLI received the class name and built it with `new $class()`, so a single command (`__invoke()`) or a public method without `#[Command]` failed when the constructor required anything. WP-CLI now receives the instance the discovery built, which runs every command and subcommand
