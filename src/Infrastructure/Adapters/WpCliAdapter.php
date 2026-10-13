@@ -75,9 +75,14 @@ final class WpCliAdapter
                 throw new \InvalidArgumentException(sprintf("Method '%s' does not exist on class '%s'", $method, $class));
             }
         } elseif (is_object($handler)) {
-            if (! method_exists($handler, '__invoke')) {
+            // An instance runs as WP-CLI runs its class: through __invoke, or as a
+            // suite whose public methods are the subcommands
+            $publicMethods = (new \ReflectionObject($handler))->getMethods(\ReflectionMethod::IS_PUBLIC);
+            $commands = array_filter($publicMethods, fn (\ReflectionMethod $method): bool => ! $method->isStatic() && ! $method->isConstructor());
+
+            if ($commands === []) {
                 $class = $handler::class;
-                throw new \InvalidArgumentException(sprintf("Object of class '%s' must be invokable (have __invoke method)", $class));
+                throw new \InvalidArgumentException(sprintf("Object of class '%s' must be invokable or have public methods to run as subcommands", $class));
             }
         }
     }

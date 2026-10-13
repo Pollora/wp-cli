@@ -31,12 +31,12 @@ class WpCliService
      * Register a WP CLI command.
      *
      * @param  string  $name  The command name
-     * @param  string|array  $className  The command class name or callable array
+     * @param  string|array|object  $className  The command class name, instance or callable
      * @param  string  $description  The command description
      * @param  int  $priority  The registration priority
      * @param  array  $args  Additional WP_CLI::add_command() arguments
      */
-    public function register(string $name, string|array $className, string $description = '', int $priority = 0, array $args = []): void
+    public function register(string $name, string|array|object $className, string $description = '', int $priority = 0, array $args = []): void
     {
         $this->registeredCommands[$name] = [
             'class' => $className,
@@ -53,10 +53,10 @@ class WpCliService
      * Register a command with WP CLI through the adapter.
      *
      * @param  string  $name  The command name
-     * @param  string|array  $className  The command class name or callable array
+     * @param  string|array|object  $className  The command class name, instance or callable
      * @param  array  $args  Additional WP_CLI::add_command() arguments
      */
-    private function registerWithWpCli(string $name, string|array $className, array $args = []): void
+    private function registerWithWpCli(string $name, string|array|object $className, array $args = []): void
     {
         if (! $this->wpCliAdapter->isAvailable()) {
             return;

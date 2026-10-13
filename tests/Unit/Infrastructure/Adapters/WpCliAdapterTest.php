@@ -114,8 +114,19 @@ describe('WpCliAdapter validation', function (): void {
         expect(true)->toBeTrue();
     });
 
-    it('rejects a non-invokable object', function (): void {
+    it('accepts a command suite instance, whose public methods are the subcommands', function (): void {
+        $handler = new class
+        {
+            public function list(): void {}
+        };
+
+        $this->validate->invoke($this->adapter, $handler);
+
+        expect(true)->toBeTrue();
+    });
+
+    it('rejects an object with nothing to run', function (): void {
         expect(fn () => $this->validate->invoke($this->adapter, new stdClass))
-            ->toThrow(InvalidArgumentException::class, 'must be invokable');
+            ->toThrow(InvalidArgumentException::class, 'must be invokable or have public methods');
     });
 });

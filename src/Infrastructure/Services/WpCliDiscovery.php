@@ -107,16 +107,16 @@ final class WpCliDiscovery implements DiscoveryInterface
             return;
         }
 
-        // On garde quand même l'instance dispo pour les subcommands
+        // WP-CLI gets the instance, built with its dependencies: given the class
+        // name, it would build the class itself, with no argument
         $instance = $this->getCommandInstance($className);
 
         if ($this->hasSubcommands($reflectionClass)) {
-            $this->processSubcommands($reflectionClass, $className, $commandName, $instance);
+            $this->processSubcommands($reflectionClass, $commandName, $instance);
         } else {
-            // IMPORTANT : on repasse au class-string, pas à l'instance
             $this->registerCommand(
                 $commandName,
-                $className,
+                $instance,
                 $this->collectWpCliArguments($reflectionClass)
             );
         }
@@ -156,14 +156,13 @@ final class WpCliDiscovery implements DiscoveryInterface
      */
     private function processSubcommands(
         ReflectionClass $reflectionClass,
-        string $className,
         string $baseCommandName,
         object $instance
     ): void {
-        // Base command => class-string, comme avant
+        // The base command runs the public methods WP-CLI finds on the instance
         $this->registerCommand(
             $baseCommandName,
-            $className,
+            $instance,
             $this->collectWpCliArguments($reflectionClass)
         );
 
@@ -195,7 +194,7 @@ final class WpCliDiscovery implements DiscoveryInterface
      *
      * @param  array<string,mixed>  $args
      */
-    private function registerCommand(string $commandName, string|array|\Closure $handler, array $args = []): void
+    private function registerCommand(string $commandName, string|array|object $handler, array $args = []): void
     {
         // Delegate to the application service which handles WP-CLI registration
         $this->wpCliService->register($commandName, $handler, '', 0, $args);

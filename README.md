@@ -59,8 +59,9 @@ wp reports rm 2026-09
 ```
 
 - The command name is the class name in kebab case, without its `Command` suffix: `ReportsCommand` → `reports`. `#[WpCli('reports')]` sets it. A class with `__invoke()` is a single command.
-- A method with `#[Command]` is a subcommand registered by this package: `#[Command('rm')]` names it, its `#[Synopsis]`, `#[When]`, `#[BeforeInvoke]`, `#[AfterInvoke]` and `#[IsDeferred]` become the matching `WP_CLI::add_command()` arguments, and it is called on an instance built with its constructor dependencies.
-- The class is also handed to WP-CLI by name, so its other public methods are subcommands too, named after them (`listItems()` → `list-items`). WP-CLI runs those itself: it builds the class without arguments and reads their help from the docblock.
+- A method with `#[Command]` is a subcommand registered by this package: `#[Command('rm')]` names it, and its `#[Synopsis]`, `#[When]`, `#[BeforeInvoke]`, `#[AfterInvoke]` and `#[IsDeferred]` become the matching `WP_CLI::add_command()` arguments.
+- WP-CLI also runs the class's other public methods as subcommands, under their method name, with their help read from the docblock.
+- The class is built once, with its constructor dependencies, and that instance runs every command and subcommand.
 
 ## Wiring it outside Pollora
 
