@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Commands get their constructor dependencies: WP-CLI received the class name and built it with `new $class()`, so a single command (`__invoke()`) or a public method without `#[Command]` failed when the constructor required anything. WP-CLI now receives the instance the discovery built, which runs every command and subcommand
+- A non-public method with `#[Command]` registers: `WpCliService::register()` accepted only a class name or an array, and refused the callable built for it with a `TypeError`
+
 ## [0.1.0] - 2026-10-13
 
 A first version for the framework's next release to build on; 1.0.0 comes with that release.
