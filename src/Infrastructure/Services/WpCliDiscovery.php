@@ -129,13 +129,8 @@ final class WpCliDiscovery implements DiscoveryInterface
      */
     private function getCommandInstance(string $className): object
     {
-        // Use instance pool if available, otherwise fallback to local cache
-        return $this->getInstanceFromPool($className, function () use ($className): object {
-            // On laisse le container gérer la construction
-            $this->commandInstances[$className] ??= resolve($className);
-
-            return $this->commandInstances[$className];
-        });
+        // The instance pool builds it with its dependencies; one instance per class
+        return $this->commandInstances[$className] ??= $this->getInstanceFromPool($className);
     }
 
     /**
