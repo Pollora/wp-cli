@@ -14,6 +14,6 @@ permissions: {}
 
 jobs:
   harness:
-    uses: Pollora/harness/.github/workflows/php-package.yml@fix/contract-job-installs-dependencies
+    uses: Pollora/harness/.github/workflows/php-package.yml@fix/contract-job-unresolvable-parent
     permissions:
       contents: read
