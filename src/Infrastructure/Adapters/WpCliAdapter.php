@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pollora\WpCli\Infrastructure\Adapters;
 
+use Pollora\WpCli\Domain\Exceptions\WpCliUnavailable;
 use WP_CLI;
 
 /**
@@ -36,7 +37,7 @@ final class WpCliAdapter
     public function addCommand(string $name, string|array|object $handler, array $args = []): void
     {
         if (! $this->isAvailable()) {
-            throw new \RuntimeException('WP-CLI is not available');
+            throw WpCliUnavailable::whenRegisteringACommand();
         }
 
         $this->validateHandler($handler);
