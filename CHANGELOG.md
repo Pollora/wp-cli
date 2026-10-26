@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Registering a command outside WP-CLI throws the named `WpCliUnavailable` exception instead of a bare `\RuntimeException`. It extends `\RuntimeException`, and the message keeps its `WP-CLI is not available` prefix, followed by how to avoid it
+
 ## [0.1.1] - 2026-10-13
 
 ### Fixed
