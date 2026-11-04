@@ -9,7 +9,7 @@ use RuntimeException;
 /**
  * Thrown when a command is registered outside a WP-CLI process.
  */
-final class WpCliUnavailable extends RuntimeException
+final class WpCliUnavailableException extends RuntimeException
 {
     public static function whenRegisteringACommand(): self
     {

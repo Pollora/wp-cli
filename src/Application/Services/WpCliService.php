@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pollora\WpCli\Application\Services;
 
-use Pollora\WpCli\Infrastructure\Adapters\WpCliAdapter;
+use Pollora\WpCli\Domain\Contracts\WpCliAdapterInterface;
 use Psr\Log\LoggerInterface;
 use WP_CLI;
 
@@ -23,7 +23,7 @@ class WpCliService
     private array $registeredCommands = [];
 
     public function __construct(
-        private readonly WpCliAdapter $wpCliAdapter,
+        private readonly WpCliAdapterInterface $wpCliAdapter,
         private readonly ?LoggerInterface $logger = null
     ) {}
 
