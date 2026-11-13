@@ -76,6 +76,13 @@ describe('WpCliMethodWrapper', function (): void {
         expect($wrapper->getDocComment())->toBeFalse();
     });
 
+    it('exposes the original method as the proxy method, so WP-CLI reads its docblock', function (): void {
+        $method = new ReflectionMethod($this->instance, 'greet');
+        $wrapper = new WpCliMethodWrapper($this->instance, $method);
+
+        expect($wrapper->createProxyMethod())->toBe($method);
+    });
+
     it('returns the original method reflection', function (): void {
         $method = new ReflectionMethod($this->instance, 'greet');
         $wrapper = new WpCliMethodWrapper($this->instance, $method);
