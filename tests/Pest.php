@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 use Brain\Monkey;
 
+// PHPUnit's separate-process runner needs this constant to find the autoloader;
+// the Pest binary does not define it.
+if (! defined('PHPUNIT_COMPOSER_INSTALL')) {
+    define('PHPUNIT_COMPOSER_INSTALL', dirname(__DIR__).'/vendor/autoload.php');
+}
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
