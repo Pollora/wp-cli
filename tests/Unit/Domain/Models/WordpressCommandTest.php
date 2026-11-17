@@ -77,3 +77,20 @@ it('registers with priority 0 unless a command overrides it', function (): void 
     expect((new GreetWordpressCommandFixture)->getPriority())->toBe(0)
         ->and((new PrioritisedWordpressCommandFixture)->getPriority())->toBe(20);
 });
+
+final class DescribedWordpressCommandFixture extends WordpressCommand
+{
+    public function __invoke(array $arguments, array $options): void {}
+
+    public function initialize(): void {}
+
+    public static function getDefaultDescription(): ?string
+    {
+        return 'Described by the command';
+    }
+}
+
+it('gives WP-CLI the default description a command declares as its short description', function (): void {
+    expect(DescribedWordpressCommandFixture::get_shortdesc())->toBe('Described by the command')
+        ->and((new DescribedWordpressCommandFixture)->getRegistrationData()['description'])->toBe('Described by the command');
+});
