@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `WpCliService` now depends on the new `WpCliAdapterInterface` contract (implemented by `WpCliAdapter`) instead of the concrete adapter, so that the application layer no longer depends on the infrastructure layer. Passing a `WpCliAdapter` keeps working
 - Registering a command outside WP-CLI throws the named `WpCliUnavailableException` exception instead of a bare `\RuntimeException`. It extends `\RuntimeException`, and the message keeps its `WP-CLI is not available` prefix, followed by how to avoid it
 
+### Changed
+
+- Accepts pollora/discovery ^0.3 (`^0.1 || ^0.2 || ^0.3 || ^1.0`)
+
 ## [0.1.1] - 2026-10-13
 
 ### Fixed
