@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-23
+
+### Changed
+
+- Accepts `pollora/discovery` ^0.3 (`^0.1 || ^0.2 || ^0.3 || ^1.0`)
+
 ## [0.1.2] - 2026-11-19
 
 ### Changed
@@ -16,8 +22,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Registering a command outside WP-CLI throws the named `WpCliUnavailableException` exception instead of a bare `\RuntimeException`. It extends `\RuntimeException`, and the message keeps its `WP-CLI is not available` prefix, followed by how to avoid it
 
 ### Changed
-
-- Accepts pollora/discovery ^0.3 (`^0.1 || ^0.2 || ^0.3 || ^1.0`)
 
 ## [0.1.1] - 2026-10-13
 
