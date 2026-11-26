@@ -98,6 +98,28 @@ final class WpCliAdapterWithWpCliTest extends TestCase
         $this->assertSame([['cache', 'flush'], ['nope']], \WP_CLI::$runner->asked);
     }
 
+    /**
+     * The runner answers an error message, not null, for a command it does not know.
+     */
+    #[RunInSeparateProcess]
+    public function test_it_reads_an_error_message_from_the_runner_as_no_command(): void
+    {
+        $this->declareWpCli();
+        \WP_CLI::$runner = new class
+        {
+            public function find_command_to_run(array $parts): array|string
+            {
+                return $parts === ['cache', 'flush']
+                    ? [new \stdClass, [], $parts]
+                    : "'nope' is not a registered wp command.";
+            }
+        };
+        $adapter = new WpCliAdapter;
+
+        $this->assertTrue($adapter->hasCommand('cache flush'));
+        $this->assertFalse($adapter->hasCommand('nope'));
+    }
+
     #[RunInSeparateProcess]
     public function test_it_reports_no_command_when_the_runner_is_not_ready(): void
     {

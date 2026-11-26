@@ -86,7 +86,9 @@ final class WpCliDiscovery implements DiscoveryInterface
      */
     private function processWpCliCommand(string $className, ?ReflectionCacheInterface $reflectionCache = null): void
     {
-        $reflectionClass = $reflectionCache->getClassReflection($className);
+        $reflectionClass = $reflectionCache instanceof ReflectionCacheInterface
+            ? $reflectionCache->getClassReflection($className)
+            : new ReflectionClass($className);
 
         if (! $reflectionClass->isInstantiable()) {
             return;

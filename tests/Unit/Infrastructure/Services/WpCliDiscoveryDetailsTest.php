@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Pollora\Attributes\WpCli;
 use Pollora\Attributes\WpCli\Command;
+use Pollora\Discovery\Domain\Contracts\ReflectionCacheInterface;
 use Pollora\Discovery\Domain\Models\DiscoveryLocation;
 use Pollora\Discovery\Infrastructure\Services\ReflectionCache;
 use Pollora\WpCli\Application\Services\WpCliService;
@@ -132,6 +133,23 @@ it('registers a command with an empty description and priority 0', function (): 
         ->and($calls[0]['name'])->toBe('details-plain')
         ->and($calls[0]['description'])->toBe('')
         ->and($calls[0]['priority'])->toBe(0);
+});
+
+it('registers a command discovered without a reflection cache, which the contract makes optional', function (): void {
+    [$discovery, $recorded] = detailsDiscovery();
+    $discovery->discover(new DiscoveryLocation('', __DIR__), DiscoveredClass::fromReflection(new ReflectionClass(PlainDetailsCommandFixture::class)));
+    $discovery->apply();
+
+    expect(array_column($recorded->getArrayCopy(), 'name'))->toBe(['details-plain']);
+});
+
+it('reflects a command through the reflection cache when it was given one', function (): void {
+    $cache = Mockery::mock(ReflectionCacheInterface::class);
+    $cache->shouldReceive('getClassReflection')->once()->andReturn(new ReflectionClass(PlainDetailsCommandFixture::class));
+
+    [$discovery] = detailsDiscovery();
+    $discovery->discover(new DiscoveryLocation('', __DIR__), DiscoveredClass::fromReflection(new ReflectionClass(PlainDetailsCommandFixture::class)), $cache);
+    $discovery->apply();
 });
 
 it('takes no help from the docblock of the command class itself', function (): void {

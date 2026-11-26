@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `WpCliAdapter::hasCommand()` answered `true` for any name while WP-CLI was running: the runner returns an error message, not `null`, for a command it does not know
+- A handler array naming a private or protected method is refused with `InvalidArgumentException`, which `WpCliService` logs. WP-CLI received it, reported the callable as missing and stopped the whole `wp` run
+- A command discovered without a reflection cache, which `discover()` makes optional, was never registered
+
 ## [0.1.3] - 2026-11-23
 
 ### Changed
