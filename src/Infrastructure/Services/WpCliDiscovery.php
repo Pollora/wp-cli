@@ -83,6 +83,8 @@ final class WpCliDiscovery implements DiscoveryInterface
 
     /**
      * Process a WP CLI command class for registration.
+     *
+     * @param  class-string  $className
      */
     private function processWpCliCommand(string $className, ?ReflectionCacheInterface $reflectionCache = null): void
     {
@@ -247,7 +249,8 @@ final class WpCliDiscovery implements DiscoveryInterface
         foreach ($attributeMap as $attributeClass => [$property, $wpCliKey]) {
             $attributes = $reflection->getAttributes($attributeClass);
             if ($attributes !== []) {
-                $args[$wpCliKey] = $attributes[0]->newInstance()->$property;
+                // Each attribute exposes its value as one public property
+                $args[$wpCliKey] = get_object_vars($attributes[0]->newInstance())[$property];
             }
         }
 
