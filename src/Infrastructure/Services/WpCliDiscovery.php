@@ -137,6 +137,8 @@ final class WpCliDiscovery implements DiscoveryInterface
 
     /**
      * Check if the class has subcommands (no __invoke and has #[Command] methods).
+     *
+     * @param  ReflectionClass<object>  $reflectionClass
      */
     private function hasSubcommands(ReflectionClass $reflectionClass): bool
     {
@@ -155,6 +157,8 @@ final class WpCliDiscovery implements DiscoveryInterface
 
     /**
      * Process and register subcommands for a class.
+     *
+     * @param  ReflectionClass<object>  $reflectionClass
      */
     private function processSubcommands(
         ReflectionClass $reflectionClass,
@@ -194,7 +198,8 @@ final class WpCliDiscovery implements DiscoveryInterface
      * Register a command through the WP CLI service only.
      * This ensures single responsibility and avoids duplication.
      *
-     * @param  array<string,mixed>  $args
+     * @param  string|array<mixed>|object  $handler
+     * @param  array<string, mixed>  $args
      */
     private function registerCommand(string $commandName, string|array|object $handler, array $args = []): void
     {
@@ -204,6 +209,8 @@ final class WpCliDiscovery implements DiscoveryInterface
 
     /**
      * Create a callable for a method (handles private/protected methods).
+     *
+     * @return array{object, string}|\Closure
      */
     private function createCallable(object $instance, ReflectionMethod $method): array|\Closure
     {
@@ -221,6 +228,9 @@ final class WpCliDiscovery implements DiscoveryInterface
 
     /**
      * Collect WP CLI arguments from reflection attributes.
+     *
+     * @param  ReflectionClass<object>|ReflectionMethod  $reflection
+     * @return array<string, mixed>
      */
     private function collectWpCliArguments(ReflectionClass|ReflectionMethod $reflection): array
     {
@@ -260,6 +270,8 @@ final class WpCliDiscovery implements DiscoveryInterface
 
     /**
      * Extract description from method docblock for WP-CLI help.
+     *
+     * @return array{short: string, long: string}
      */
     private function extractMethodDescription(string $docComment): array
     {

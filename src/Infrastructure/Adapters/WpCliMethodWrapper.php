@@ -26,6 +26,10 @@ final readonly class WpCliMethodWrapper
         $this->docComment = $this->originalMethod->getDocComment() ?: '';
     }
 
+    /**
+     * @param  array<mixed>  $args  Positional arguments
+     * @param  array<string, mixed>  $assocArgs  Options and flags
+     */
     public function __invoke(array $args, array $assocArgs): mixed
     {
         // Delegate to the original method
@@ -35,6 +39,8 @@ final readonly class WpCliMethodWrapper
     /**
      * Magic method to expose the original method name when WP-CLI reflects on this object
      * This allows WP-CLI to find a method with the same name as the original.
+     *
+     * @param  array<mixed>  $arguments
      */
     public function __call(string $name, array $arguments): mixed
     {

@@ -18,7 +18,7 @@ use WP_CLI;
 class WpCliService
 {
     /**
-     * @var array<string, array{class: string|array, description: string, priority: int, args: array}>
+     * @var array<string, array{class: string|array<mixed>|object, description: string, priority: int, args: array<string, mixed>}>
      */
     private array $registeredCommands = [];
 
@@ -31,10 +31,10 @@ class WpCliService
      * Register a WP CLI command.
      *
      * @param  string  $name  The command name
-     * @param  string|array|object  $className  The command class name, instance or callable
+     * @param  string|array<mixed>|object  $className  The command class name, instance or callable
      * @param  string  $description  The command description
      * @param  int  $priority  The registration priority
-     * @param  array  $args  Additional WP_CLI::add_command() arguments
+     * @param  array<string, mixed>  $args  Additional WP_CLI::add_command() arguments
      */
     public function register(string $name, string|array|object $className, string $description = '', int $priority = 0, array $args = []): void
     {
@@ -53,8 +53,8 @@ class WpCliService
      * Register a command with WP CLI through the adapter.
      *
      * @param  string  $name  The command name
-     * @param  string|array|object  $className  The command class name, instance or callable
-     * @param  array  $args  Additional WP_CLI::add_command() arguments
+     * @param  string|array<mixed>|object  $className  The command class name, instance or callable
+     * @param  array<string, mixed>  $args  Additional WP_CLI::add_command() arguments
      */
     private function registerWithWpCli(string $name, string|array|object $className, array $args = []): void
     {
@@ -88,7 +88,7 @@ class WpCliService
     /**
      * Get all registered commands.
      *
-     * @return array<string, array{class: string|array, description: string, priority: int, args: array}>
+     * @return array<string, array{class: string|array<mixed>|object, description: string, priority: int, args: array<string, mixed>}>
      */
     public function getRegisteredCommands(): array
     {
@@ -109,7 +109,7 @@ class WpCliService
      * Get command information.
      *
      * @param  string  $name  The command name
-     * @return array{class: string|array, description: string, priority: int, args: array}|null
+     * @return array{class: string|array<mixed>|object, description: string, priority: int, args: array<string, mixed>}|null
      */
     public function getCommand(string $name): ?array
     {
