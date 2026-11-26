@@ -72,6 +72,7 @@ final class WpCliDiscovery implements DiscoveryInterface
     public function apply(): void
     {
         foreach ($this->getItems() as $discoveredItem) {
+            /** @var array{class: class-string, reflection_cache?: ReflectionCacheInterface|null} $discoveredItem What discover() adds */
             try {
                 $reflectionCache = $discoveredItem['reflection_cache'] ?? null;
                 $this->processWpCliCommand($discoveredItem['class'], $reflectionCache);
