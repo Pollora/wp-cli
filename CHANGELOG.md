@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `WpCliAdapter::hasCommand()` answered `true` for any name while WP-CLI was running: the runner returns an error message, not `null`, for a command it does not know
+
 ## [0.1.3] - 2026-11-23
 
 ### Changed

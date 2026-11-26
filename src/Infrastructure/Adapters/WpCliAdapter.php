@@ -104,7 +104,8 @@ final class WpCliAdapter implements WpCliAdapterInterface
         try {
             $runner = WP_CLI::get_runner();
 
-            return $runner->find_command_to_run(explode(' ', $name)) !== null;
+            // The runner answers [command, remaining words, path], or an error message
+            return is_array($runner->find_command_to_run(explode(' ', $name)));
         } catch (\Throwable) {
             return false;
         }
