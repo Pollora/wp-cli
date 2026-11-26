@@ -113,10 +113,10 @@ final class WpCliAdapter implements WpCliAdapterInterface
         }
 
         try {
-            $runner = WP_CLI::get_runner();
+            $lookup = [WP_CLI::get_runner(), 'find_command_to_run'];
 
             // The runner answers [command, remaining words, path], or an error message
-            return is_array($runner->find_command_to_run(explode(' ', $name)));
+            return is_callable($lookup) && is_array($lookup(explode(' ', $name)));
         } catch (\Throwable) {
             return false;
         }
@@ -133,7 +133,7 @@ final class WpCliAdapter implements WpCliAdapterInterface
             return null;
         }
 
-        return WP_CLI_VERSION ?? null;
+        return \defined('WP_CLI_VERSION') && is_string(WP_CLI_VERSION) ? WP_CLI_VERSION : null;
     }
 
     /**

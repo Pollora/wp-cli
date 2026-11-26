@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- PHPStan runs at level 10 (was 5), with no ignored error. The PHPDoc of `WpCliService` and of the adapter now says what they accept and return
+
 ### Fixed
 
 - `WpCliAdapter::hasCommand()` answered `true` for any name while WP-CLI was running: the runner returns an error message, not `null`, for a command it does not know
