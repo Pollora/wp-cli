@@ -2,12 +2,6 @@ includes:
     - vendor/pollora/harness/presets/phpstan/base.neon
 
 parameters:
-    level: 5
+    level: 10
     paths:
         - src
-    ignoreErrors:
-        # WP-CLI defines it when it runs; getVersion() reads it only then
-        -
-            identifier: constant.notFound
-            message: '#^Constant WP_CLI_VERSION not found\.$#'
-            path: src/Infrastructure/Adapters/WpCliAdapter.php

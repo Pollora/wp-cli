@@ -29,7 +29,7 @@ final class WpCliAdapter implements WpCliAdapterInterface
      * Register a command with WP-CLI.
      *
      * @param  string  $name  The command name
-     * @param  string|array|object  $handler  The command handler
+     * @param  string|array<mixed>|object  $handler  The command handler
      * @param  array<string, mixed>  $args  Additional arguments for WP-CLI
      *
      * @throws \RuntimeException If WP-CLI is not available
@@ -41,17 +41,18 @@ final class WpCliAdapter implements WpCliAdapterInterface
             throw WpCliUnavailableException::whenRegisteringACommand();
         }
 
-        $this->validateHandler($handler);
-
-        WP_CLI::add_command($name, $handler, $args);
+        WP_CLI::add_command($name, $this->validateHandler($handler), $args);
     }
 
     /**
      * Validate that the handler is properly formatted.
      *
+     * @param  string|array<mixed>|object  $handler
+     * @return callable|object|string The handler, in a form WP-CLI accepts
+     *
      * @throws \InvalidArgumentException If the handler is invalid
      */
-    private function validateHandler(string|array|object $handler): void
+    private function validateHandler(string|array|object $handler): callable|object|string
     {
         if (is_string($handler)) {
             if (! class_exists($handler)) {
@@ -77,9 +78,13 @@ final class WpCliAdapter implements WpCliAdapterInterface
                 throw new \InvalidArgumentException(sprintf("Method '%s' does not exist on class '%s'", $method, $class));
             }
 
-            if (! is_callable([$object, $method])) {
+            $callable = [$object, $method];
+
+            if (! is_callable($callable)) {
                 throw new \InvalidArgumentException(sprintf("Method '%s' of class '%s' is not public", $method, $object::class));
             }
+
+            return $callable;
         } elseif (is_object($handler)) {
             // An instance runs as WP-CLI runs its class: through __invoke, or as a
             // suite whose public methods are the subcommands
@@ -91,6 +96,8 @@ final class WpCliAdapter implements WpCliAdapterInterface
                 throw new \InvalidArgumentException(sprintf("Object of class '%s' must be invokable or have public methods to run as subcommands", $class));
             }
         }
+
+        return $handler;
     }
 
     /**
@@ -106,10 +113,10 @@ final class WpCliAdapter implements WpCliAdapterInterface
         }
 
         try {
-            $runner = WP_CLI::get_runner();
+            $lookup = [WP_CLI::get_runner(), 'find_command_to_run'];
 
             // The runner answers [command, remaining words, path], or an error message
-            return is_array($runner->find_command_to_run(explode(' ', $name)));
+            return is_callable($lookup) && is_array($lookup(explode(' ', $name)));
         } catch (\Throwable) {
             return false;
         }
@@ -126,7 +133,7 @@ final class WpCliAdapter implements WpCliAdapterInterface
             return null;
         }
 
-        return WP_CLI_VERSION ?? null;
+        return \defined('WP_CLI_VERSION') && is_string(WP_CLI_VERSION) ? WP_CLI_VERSION : null;
     }
 
     /**
