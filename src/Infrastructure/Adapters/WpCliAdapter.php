@@ -76,6 +76,10 @@ final class WpCliAdapter implements WpCliAdapterInterface
                 $class = $object::class;
                 throw new \InvalidArgumentException(sprintf("Method '%s' does not exist on class '%s'", $method, $class));
             }
+
+            if (! is_callable([$object, $method])) {
+                throw new \InvalidArgumentException(sprintf("Method '%s' of class '%s' is not public", $method, $object::class));
+            }
         } elseif (is_object($handler)) {
             // An instance runs as WP-CLI runs its class: through __invoke, or as a
             // suite whose public methods are the subcommands

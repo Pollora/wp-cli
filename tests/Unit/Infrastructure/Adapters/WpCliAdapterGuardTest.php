@@ -166,3 +166,16 @@ describe('handler validation of an object', function (): void {
             ->toThrow(InvalidArgumentException::class, sprintf("Object of class '%s' %s", $handler::class, $this->message));
     });
 });
+
+it('rejects a handler array naming a method WP-CLI cannot call', function (string $method): void {
+    $handler = new class
+    {
+        protected function hidden(): void {}
+
+        private function secret(): void {}
+    };
+    $validate = new ReflectionMethod(WpCliAdapter::class, 'validateHandler');
+
+    expect(fn (): mixed => $validate->invoke(new WpCliAdapter, [$handler, $method]))
+        ->toThrow(InvalidArgumentException::class, sprintf("Method '%s' of class '%s' is not public", $method, $handler::class));
+})->with(['hidden', 'secret']);
