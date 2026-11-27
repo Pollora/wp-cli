@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-27
+
 ### Added
 
 - `WpCliServiceInterface` (`Pollora\WpCli\Domain\Contracts`), the public methods of `WpCliService`. `WpCliDiscovery` takes it, so another implementation, or a test double, can stand in
