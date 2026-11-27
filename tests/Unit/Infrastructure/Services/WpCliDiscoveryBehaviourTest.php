@@ -11,7 +11,7 @@ use Pollora\Attributes\WpCli\Synopsis;
 use Pollora\Attributes\WpCli\When;
 use Pollora\Discovery\Domain\Models\DiscoveryLocation;
 use Pollora\Discovery\Infrastructure\Services\ReflectionCache;
-use Pollora\WpCli\Application\Services\WpCliService;
+use Pollora\WpCli\Domain\Contracts\WpCliServiceInterface;
 use Pollora\WpCli\Infrastructure\Services\WpCliDiscovery;
 use Psr\Log\LoggerInterface;
 use Spatie\StructureDiscoverer\Data\DiscoveredClass;
@@ -91,7 +91,7 @@ final class NeedsInputBehaviourCommandFixture
 function behaviourRegistrations(string $class, ?LoggerInterface $logger = null): array
 {
     $registered = [];
-    $service = Mockery::mock(WpCliService::class);
+    $service = Mockery::mock(WpCliServiceInterface::class);
     $service->shouldReceive('register')->andReturnUsing(
         function (string $name, mixed $handler, string $description, int $priority, array $args) use (&$registered): void {
             $registered[$name] = ['handler' => $handler, 'args' => $args];
@@ -106,7 +106,7 @@ function behaviourRegistrations(string $class, ?LoggerInterface $logger = null):
 }
 
 it('identifies itself as the wp_cli_commands discovery', function (): void {
-    expect((new WpCliDiscovery(Mockery::mock(WpCliService::class)))->getIdentifier())->toBe('wp_cli_commands');
+    expect((new WpCliDiscovery(Mockery::mock(WpCliServiceInterface::class)))->getIdentifier())->toBe('wp_cli_commands');
 });
 
 it('hands WP-CLI the synopsis, hook, deferral and invoke callbacks declared on the class', function (): void {
@@ -196,7 +196,7 @@ it('ignores abstract classes, classes without #[WpCli] and structures that are n
     expect(behaviourRegistrations(AbstractBehaviourCommandFixture::class))->toBe([])
         ->and(behaviourRegistrations(PlainBehaviourClassFixture::class))->toBe([]);
 
-    $service = Mockery::mock(WpCliService::class);
+    $service = Mockery::mock(WpCliServiceInterface::class);
     $service->shouldNotReceive('register');
     $discovery = new WpCliDiscovery($service);
     $discovery->discover(
@@ -219,7 +219,7 @@ it('logs a discovered item whose reflection cache is missing', function (): void
     $logger = Mockery::mock(LoggerInterface::class);
     $logger->shouldReceive('error')->once();
 
-    $discovery = new WpCliDiscovery(Mockery::mock(WpCliService::class), $logger);
+    $discovery = new WpCliDiscovery(Mockery::mock(WpCliServiceInterface::class), $logger);
     $discovery->discover(new DiscoveryLocation('', __DIR__), DiscoveredClass::fromReflection(new ReflectionClass(OptionsBehaviourCommandFixture::class)));
     $discovery->apply();
 });

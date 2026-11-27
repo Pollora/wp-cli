@@ -6,7 +6,7 @@ use Pollora\Attributes\WpCli;
 use Pollora\Attributes\WpCli\Command;
 use Pollora\Discovery\Domain\Models\DiscoveryLocation;
 use Pollora\Discovery\Infrastructure\Services\ReflectionCache;
-use Pollora\WpCli\Application\Services\WpCliService;
+use Pollora\WpCli\Domain\Contracts\WpCliServiceInterface;
 use Pollora\WpCli\Infrastructure\Services\WpCliDiscovery;
 use Spatie\StructureDiscoverer\Data\DiscoveredClass;
 
@@ -60,7 +60,7 @@ final class ReportsCommand
 function registeredHandlers(string $class): array
 {
     $handlers = [];
-    $service = Mockery::mock(WpCliService::class);
+    $service = Mockery::mock(WpCliServiceInterface::class);
     $service->shouldReceive('register')->andReturnUsing(function (string $name, mixed $handler) use (&$handlers): void {
         $handlers[$name] = $handler;
     });

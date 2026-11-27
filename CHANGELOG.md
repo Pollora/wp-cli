@@ -7,8 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `WpCliServiceInterface` (`Pollora\WpCli\Domain\Contracts`), the public methods of `WpCliService`. `WpCliDiscovery` takes it, so another implementation, or a test double, can stand in
+
 ### Changed
 
+- **BREAKING**: `WpCliService` is now `final` (CONV-08). A class that extends it no longer loads, and a test can no longer mock it with Mockery: implement or mock `WpCliServiceInterface` instead
 - PHPStan runs at level 10 (was 5), with no ignored error. The PHPDoc of `WpCliService` and of the adapter now says what they accept and return
 
 ### Fixed

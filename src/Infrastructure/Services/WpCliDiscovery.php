@@ -16,7 +16,7 @@ use Pollora\Discovery\Domain\Contracts\DiscoveryLocationInterface;
 use Pollora\Discovery\Domain\Contracts\ReflectionCacheInterface;
 use Pollora\Discovery\Domain\Services\HasInstancePool;
 use Pollora\Discovery\Domain\Services\IsDiscovery;
-use Pollora\WpCli\Application\Services\WpCliService;
+use Pollora\WpCli\Domain\Contracts\WpCliServiceInterface;
 use Pollora\WpCli\Infrastructure\Adapters\WpCliMethodWrapper;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
@@ -41,7 +41,7 @@ final class WpCliDiscovery implements DiscoveryInterface
     private array $commandInstances = [];
 
     public function __construct(
-        private readonly WpCliService $wpCliService,
+        private readonly WpCliServiceInterface $wpCliService,
         private readonly ?LoggerInterface $logger = null
     ) {}
 

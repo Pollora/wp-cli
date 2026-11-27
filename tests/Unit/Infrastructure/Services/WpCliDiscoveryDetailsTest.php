@@ -7,7 +7,7 @@ use Pollora\Attributes\WpCli\Command;
 use Pollora\Discovery\Domain\Contracts\ReflectionCacheInterface;
 use Pollora\Discovery\Domain\Models\DiscoveryLocation;
 use Pollora\Discovery\Infrastructure\Services\ReflectionCache;
-use Pollora\WpCli\Application\Services\WpCliService;
+use Pollora\WpCli\Domain\Contracts\WpCliServiceInterface;
 use Pollora\WpCli\Infrastructure\Services\WpCliDiscovery;
 use Psr\Log\LoggerInterface;
 use Spatie\StructureDiscoverer\Data\DiscoveredAttribute;
@@ -63,7 +63,7 @@ final class NeedsDetailsCommandFixture
 function detailsDiscovery(?LoggerInterface $logger = null): array
 {
     $calls = new ArrayObject;
-    $service = Mockery::mock(WpCliService::class);
+    $service = Mockery::mock(WpCliServiceInterface::class);
     $service->shouldReceive('register')->andReturnUsing(
         function (string $name, mixed $handler, string $description, int $priority, array $args) use ($calls): void {
             $calls[] = compact('name', 'handler', 'description', 'priority', 'args');
@@ -82,7 +82,7 @@ function detailsDescription(string $docComment): array
 {
     $method = new ReflectionMethod(WpCliDiscovery::class, 'extractMethodDescription');
 
-    return $method->invoke(new WpCliDiscovery(Mockery::mock(WpCliService::class)), $docComment);
+    return $method->invoke(new WpCliDiscovery(Mockery::mock(WpCliServiceInterface::class)), $docComment);
 }
 
 it('keeps the class name, namespace included, of a discovered command', function (): void {
@@ -185,7 +185,7 @@ it('logs a failed registration with the class, then the reason', function (): vo
     $logger = Mockery::mock(LoggerInterface::class);
     $logger->shouldReceive('error')->once()->with('Failed to register WP CLI command from class \\'.PlainDetailsCommandFixture::class.': service is down');
 
-    $service = Mockery::mock(WpCliService::class);
+    $service = Mockery::mock(WpCliServiceInterface::class);
     $service->shouldReceive('register')->andThrow(new RuntimeException('service is down'));
 
     $discovery = new WpCliDiscovery($service, $logger);
@@ -194,7 +194,7 @@ it('logs a failed registration with the class, then the reason', function (): vo
 });
 
 it('survives a failed registration when no logger is given', function (): void {
-    $service = Mockery::mock(WpCliService::class);
+    $service = Mockery::mock(WpCliServiceInterface::class);
     $service->shouldReceive('register')->andThrow(new RuntimeException('service is down'));
 
     $discovery = new WpCliDiscovery($service);
@@ -217,7 +217,7 @@ it('does not log a class it skips for being uninstantiable', function (): void {
 });
 
 it('treats a command without a name as skipped, never failing, when no logger is given', function (): void {
-    $discovery = new WpCliDiscovery(Mockery::mock(WpCliService::class));
+    $discovery = new WpCliDiscovery(Mockery::mock(WpCliServiceInterface::class));
     $process = new ReflectionMethod(WpCliDiscovery::class, 'processWpCliCommand');
 
     $nameless = new #[WpCli('')] class {};

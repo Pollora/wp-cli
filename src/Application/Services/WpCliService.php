@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pollora\WpCli\Application\Services;
 
 use Pollora\WpCli\Domain\Contracts\WpCliAdapterInterface;
+use Pollora\WpCli\Domain\Contracts\WpCliServiceInterface;
 use Psr\Log\LoggerInterface;
 use WP_CLI;
 
@@ -15,7 +16,7 @@ use WP_CLI;
  * in the Pollora framework. It provides methods to register commands
  * and manages their lifecycle within the WordPress CLI environment.
  */
-class WpCliService
+final class WpCliService implements WpCliServiceInterface
 {
     /**
      * @var array<string, array{class: string|array<mixed>|object, description: string, priority: int, args: array<string, mixed>}>
