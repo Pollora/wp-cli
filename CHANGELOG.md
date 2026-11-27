@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Development only: `antecedent/patchwork` is required at commit `d588654` of its `master` branch (antecedent/patchwork#235), aliased as 2.2.6, so that Pest mutants are no longer counted as caught when tests hang. This pin is temporary until the next Patchwork release
+
 ## [0.2.0] - 2026-11-27
 
 ### Added
